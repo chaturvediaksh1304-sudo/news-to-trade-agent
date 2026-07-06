@@ -24,15 +24,15 @@ The second design constraint is unusual for agent projects: **token spend is a f
 ```mermaid
 flowchart LR
     subgraph T0["Tier 0 — zero LLM calls"]
-        U[S&P 500 universe] --> S["Numeric screener\nprice Δ · volume Δ · news-count Δ"]
+        U["S&amp;P 500 universe"] --> S["Numeric screener<br/>price Δ · volume Δ · news-count Δ"]
     end
-    S -->|"15–30 ticker shortlist"| NA
+    S -- "15–30 ticker shortlist" --> NA
     subgraph T1["Tier 1 — LLM swarm, shortlist only"]
-        NA["News Analyst\n(Haiku, 1 batched call/ticker)"] -->|"|Δsentiment| > 0.3"| D
-        D["Bull vs Bear vs Risk\ndebate (Sonnet, mesh)"] --> PM["Portfolio Manager\n(Sonnet + hard caps in code)"]
-        PM --> EX["Execution\n(dry-run guard → Alpaca paper)"]
+        NA["News Analyst<br/>(Haiku, 1 batched call/ticker)"] -- "abs Δsentiment > 0.3" --> D
+        D["Bull vs Bear vs Risk<br/>debate (Sonnet, mesh)"] --> PM["Portfolio Manager<br/>(Sonnet + hard caps in code)"]
+        PM --> EX["Execution<br/>(dry-run guard → Alpaca paper)"]
     end
-    EX --> LOG[("SQLite\ntrade + reasoning log")]
+    EX --> LOG[("SQLite<br/>trade + reasoning log")]
     LOG --> DASH["Next.js dashboard"]
 ```
 

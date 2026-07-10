@@ -76,6 +76,7 @@ export default function Home() {
 
   useEffect(() => {
     const load = () =>
+      document.hidden ? undefined :
       fetch("/api/state")
         .then((r) => r.json())
         .then((s: State) => {

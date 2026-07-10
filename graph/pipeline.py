@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+from dataclasses import replace
 from typing import TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -165,11 +166,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    config = load_config()
-    if args.dry_run == "true":
-        config = Config(**{**config.__dict__, "dry_run": True})
-    else:
-        config = Config(**{**config.__dict__, "dry_run": False})
+    config = replace(load_config(), dry_run=args.dry_run == "true")
 
     alpaca = AlpacaClient(config.alpaca_api_key, config.alpaca_secret_key, config.alpaca_paper)
     memory = MemoryClient()

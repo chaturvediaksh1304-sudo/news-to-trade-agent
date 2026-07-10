@@ -68,8 +68,25 @@ class AlpacaClient:
         ]
 
     def get_news_counts(self, symbols: list[str], since_hours: int = 24) -> dict[str, int]:
-        """Headline count per symbol — numeric input for the Tier 0 screener."""
-        return {s: len(self.get_news(s, since_hours=since_hours)) for s in symbols}
+        """Headline count per symbol — numeric input for the Tier 0 screener.
+
+        Batched: one light request per 50-symbol chunk instead of one full-content
+        request per symbol (~10 calls for the S&P 500 instead of 500).
+        """
+        start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=since_hours)
+        counts = dict.fromkeys(symbols, 0)
+        # ponytail: one 50-article page per chunk; counts saturate on very heavy
+        # news days — fine for a relative screener signal. Paginate if it matters.
+        for i in range(0, len(symbols), 50):
+            chunk = symbols[i : i + 50]
+            req = NewsRequest(
+                symbols=",".join(chunk), start=start, limit=50, include_content=False
+            )
+            for article in self.news.get_news(req).data.get("news", []):
+                for s in article.symbols:
+                    if s in counts:
+                        counts[s] += 1
+        return counts
 
     # --- broker ---
 

@@ -120,6 +120,20 @@ def test_position_size_clamped_to_max_pct(session, memory) -> None:
     assert plans[0].notional == 5000.0  # clamped to 5% of 100k
 
 
+def test_sell_qty_capped_to_held_position_not_equity(session, memory) -> None:
+    verdict = DebateResult(
+        ticker="AAPL", decision="sell", confidence=0.8,
+        transcript={"bull": "b", "bear": "r", "risk": "ok"},
+    )
+    llm = FakeLLM([pm_response(size_pct=5.0)])  # 5% of $1M book far exceeds the 10 shares held
+    plans = plan_orders(
+        [verdict], equity=1_000_000.0, positions=[Position(ticker="AAPL", qty=10.0, market_value=2000.0)],
+        last_prices={"AAPL": 200.0}, trades_today=0, config=make_config(),
+        llm=llm, memory=memory, session=session,
+    )
+    assert plans[0].qty == 10.0  # capped to the 10 shares actually held, not equity/price
+
+
 def test_daily_trade_cap_enforced(session, memory) -> None:
     verdicts = [make_verdict(f"T{i}") for i in range(15)]
     response = json.dumps({"orders": [

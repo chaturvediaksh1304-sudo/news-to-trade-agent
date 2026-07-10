@@ -58,7 +58,7 @@ def plan_orders(
     memory: MemoryClient,
     session: Session,
 ) -> list[OrderPlan]:
-    held = {p.ticker for p in positions}
+    held = {p.ticker: p for p in positions}
     actionable = [
         v for v in verdicts
         if v.decision == "buy" and v.ticker not in held
@@ -101,6 +101,10 @@ def plan_orders(
         size_pct = min(float(review["size_pct"]), config.max_position_pct)
         notional = equity * size_pct / 100.0
         qty = round(notional / price, 4)
+        if v.decision == "sell":
+            # never sell more shares than we actually hold
+            qty = min(qty, held[v.ticker].qty)
+            notional = round(qty * price, 2)
         if qty <= 0:
             continue
         sl = price * (1 - STOP_LOSS_PCT) if v.decision == "buy" else price * (1 + STOP_LOSS_PCT)

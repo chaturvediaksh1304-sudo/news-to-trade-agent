@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 type Point = { date: string; equity: number };
 
 const W = 1100;
@@ -120,32 +118,20 @@ export default function EquityCurve({ points }: { points: Point[] }) {
           fill="rgba(255,255,255,0.05)"
         />
 
-        {/* 7-day moving average (dashed) */}
+        {/* 7-day moving average (dashed) — plain SVG; the draw-on animation
+            could leave strokes at pathLength 0 when its in-view trigger misfired */}
         {maPath && (
-          <motion.polyline
+          <polyline
             fill="none"
             stroke="rgba(255,255,255,0.45)"
             strokeWidth="1.5"
             strokeDasharray="6 6"
             points={maPath}
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.8, ease: "easeOut", delay: 0.4 }}
           />
         )}
 
         {/* equity line */}
-        <motion.polyline
-          fill="none"
-          stroke="var(--fg)"
-          strokeWidth="2.2"
-          points={equityPath}
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.8, ease: "easeOut" }}
-        />
+        <polyline fill="none" stroke="var(--fg)" strokeWidth="2.2" points={equityPath} />
 
         {/* endpoint marker */}
         <circle cx={x(values.length - 1)} cy={y(last)} r="4.5" fill="var(--fg)" />
